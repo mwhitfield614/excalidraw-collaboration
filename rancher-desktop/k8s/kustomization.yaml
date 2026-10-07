@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: excalidraw
+
+resources:
+  - namespace.yaml
+  - mongodb.yaml
+  - storage.yaml
+  - room.yaml
+  - frontend.yaml
+  - ingress.yaml
+
+# Generated with a content hash in its name, so editing a value here rolls
+# the frontend automatically on the next apply.
+configMapGenerator:
+  - name: frontend
+    literals:
+      # Relative URLs resolve against whatever address the browser used to
+      # open the page (localhost, a LAN IP, a hostname); nothing is host-bound.
+      - VITE_APP_BACKEND_V2_GET_URL=/storage/api/v2/scenes/
+      - VITE_APP_BACKEND_V2_POST_URL=/storage/api/v2/scenes/
+      - VITE_APP_HTTP_STORAGE_BACKEND_URL=/storage/api/v2
+      - VITE_APP_WS_SERVER_URL=/
+      - VITE_APP_FIREBASE_CONFIG={}
+      - VITE_APP_STORAGE_BACKEND=http
+      - VITE_APP_DISABLE_TRACKING=true
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: excalidraw
