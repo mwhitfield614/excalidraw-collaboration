@@ -22,7 +22,8 @@ If the demo is unavailable, deploy your own instance from the Railway template:
 - HTTP storage for scenes and files.
 - A Socket.IO room service for real-time collaboration, powered by
   [excalidraw-room-go](https://github.com/alswl/excalidraw-room-go).
-- A local Compose example and an HTTPS/Nginx production example.
+- A local Compose example, an HTTPS/Nginx production example, and a
+  Rancher Desktop setup (Compose or Kubernetes).
 
 ```mermaid
 flowchart LR
@@ -34,8 +35,9 @@ flowchart LR
   Nginx --> Room
 ```
 
-The exact service wiring is defined in [basic/docker-compose.yaml](basic/docker-compose.yaml)
-and [advanced-nginx/compose.yml](advanced-nginx/compose.yml).
+The exact service wiring is defined in [basic/docker-compose.yaml](basic/docker-compose.yaml),
+[advanced-nginx/compose.yml](advanced-nginx/compose.yml) and
+[rancher-desktop/](rancher-desktop/).
 
 ## Quick start
 
@@ -68,6 +70,13 @@ docker-compose -f basic/docker-compose.yaml down
 
 Use [basic/docker-compose.yaml](basic/docker-compose.yaml). It exposes the
 frontend, storage backend, and room service on separate local ports.
+
+### Rancher Desktop
+
+Use [rancher-desktop/](rancher-desktop/README.md). Its `rd.sh` script runs the
+stack either with Compose (moby or containerd, detected automatically) or on
+Rancher Desktop's bundled Kubernetes behind Traefik on port 80, reachable by
+IP from other machines.
 
 ### One-domain HTTPS deployment
 

@@ -1,0 +1,58 @@
+# Rancher Desktop compose stack.
+#
+# Works with either container engine Rancher Desktop offers:
+#   moby:       docker compose -f rancher-desktop/compose.yaml up -d
+#   containerd: nerdctl compose -f rancher-desktop/compose.yaml up -d
+#
+# Ports avoid 80/443, which Rancher Desktop's bundled Traefik ingress claims
+# when Kubernetes is enabled. Images are linux/amd64 only; on Apple Silicon
+# enable Rosetta in Rancher Desktop (Preferences > Virtual Machine > Emulation).
+
+services:
+  frontend:
+    image: alswl/excalidraw:v0.18.1-fork-b2
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      - VITE_APP_BACKEND_V2_GET_URL=http://localhost:${STORAGE_PORT:-8081}/api/v2/scenes/
+      - VITE_APP_BACKEND_V2_POST_URL=http://localhost:${STORAGE_PORT:-8081}/api/v2/scenes/
+      - VITE_APP_WS_SERVER_URL=http://localhost:${ROOM_PORT:-8082}
+      - VITE_APP_FIREBASE_CONFIG={}
+      - VITE_APP_HTTP_STORAGE_BACKEND_URL=http://localhost:${STORAGE_PORT:-8081}/api/v2
+      - VITE_APP_STORAGE_BACKEND=http
+      - VITE_APP_DISABLE_TRACKING=true
+    ports:
+      - ${FRONTEND_PORT:-8080}:80
+
+  storage:
+    image: alswl/excalidraw-storage-backend:v2023.11.11
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      - PORT=8080
+      - STORAGE_URI=mongodb://excalidraw:excalidraw@mongodb:27017
+    ports:
+      - ${STORAGE_PORT:-8081}:8080
+    depends_on:
+      - mongodb
+
+  room:
+    image: alswl/excalidraw-room-go:v0.1.0
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      - PORT=80
+    ports:
+      - ${ROOM_PORT:-8082}:80
+
+  mongodb:
+    image: mongo:7.0.5-jammy
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=excalidraw
+      - MONGO_INITDB_ROOT_PASSWORD=excalidraw
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
